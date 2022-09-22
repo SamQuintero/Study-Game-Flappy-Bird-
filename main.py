@@ -1,0 +1,91 @@
+import pygame, sys, time, random
+from pygame.locals import *
+import tkinter
+from tkinter import *
+
+pygame.init()
+width = 500
+height = 700
+play_surface = pygame.display.set_mode((width, height))
+background_image = pygame.image.load("back.png").convert()
+bird_image = pygame.image.load("bird.png").convert_alpha()
+top_pipe = pygame.image.load("pipe_top.png").convert_alpha()
+bot_pipe = pygame.image.load("pipe_bot.png").convert_alpha()
+fps = pygame.time.Clock()
+question=0
+#top pipe
+
+def pipe_random_height():
+    pipe_h = [random.randint(200,(height/2)-20), random.randint((height/2)+20, height-200)]
+    return pipe_h
+def main():
+
+    score = 0
+    player_pos = [100, 350]
+    gravity = 1.5
+    speed = 1
+    jump = -30
+    #pipe
+    pipe_pos = 700
+    pipe_width = 50
+    pipe_height = pipe_random_height()
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+            if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        speed += jump
+        #Down Force
+        speed += gravity
+        speed *= 0.95
+        player_pos[1] += speed
+
+        #pipe
+        if pipe_pos >= -20:
+            pipe_pos -= 10
+        else:
+            pipe_pos = 700
+            pipe_height = pipe_random_height()
+            score += 1
+        if score>3:
+            gravity=0.2
+            speed *= 0
+            pipe_pos=0
+            aceptar=600
+            play_surface.fill((255,255,255))
+            question=1
+            print(question)
+        else:
+            gravity = 1.5
+            speed *= 0.95
+            pipe_pos -=10
+
+        #Surface
+        play_surface.blit(background_image, [0, 0])
+
+        #drawpipe
+        play_surface.blit(top_pipe, (pipe_pos, -pipe_height[0]))
+        play_surface.blit(bot_pipe, (pipe_pos, pipe_height[1]))
+
+        #player
+        play_surface.blit(bird_image, (int(player_pos[0]), int(player_pos[1])))
+
+        #Collision
+        if player_pos[1] <= (-pipe_height[0]+500) or player_pos[1] >= pipe_height[1]:
+            if player_pos[0] in list(range(pipe_pos, pipe_pos+pipe_width)):
+                print(f"Game Over. Score: {score}")
+                run = False
+        #Borders
+        if player_pos[1] >= height:
+            player_pos[1] = height
+            speed = 0
+        elif player_pos[1] <= 0:
+            player_pos[1] = 0
+            speed = 0
+        pygame.display.flip()
+        fps.tick(25)
+main()
+pygame.quit()
